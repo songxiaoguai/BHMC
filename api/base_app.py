@@ -3,12 +3,14 @@ import os
 
 import requests
 
+from api import phone, code
+
 
 class BaseApp(object):
     def __init__(self):
         self.base_url = "http://test-api.bhmc.com.cn"
         self.base_bhmc_url = "http://test-api.bhmc.com.cn"
-        self.app_headers = {"Content-Type": "application/x-www-form-urlencoded"}
+        self.app_headers = {"Content-Type": "application/x-www-form-urlencoded", "token": None}
         self.token = None
         self.user_hid = None
 
@@ -24,7 +26,7 @@ class BaseApp(object):
         else:
             self.rp = requests.get(url=self.get_url, params=get_data, headers=self.app_headers, verify=False)
 
-    def requests_post(self, url, post_data=None, token=None, content=None):
+    def requests_post(self, url, post_data=None, content=None):
         # post方法
         self.post_url = self.base_url + url
         if content == "json":
@@ -37,7 +39,7 @@ class BaseApp(object):
         else:
             self.rp = requests.post(url=self.post_url, data=post_data, headers=self.app_headers, verify=False)
 
-    def requests_delete(self, url, post_data=None, token=None, content=None):
+    def requests_delete(self, url, post_data=None, content=None):
         # delete方法
         self.post_url = self.base_url + url
         if content == "json":
@@ -52,21 +54,27 @@ class BaseApp(object):
 
     def send_message(self, phone):
         # 获取验证码
+        phone_data = phone
+        if phone is None:
+            phone_data = phone
         url = "/v1/app/white/sms2"
-        data = {"phone": phone}
+        data = {"phone": phone_data}
         self.requests_post(url, data)
         return self.get_json()
 
-    def by_login(self, phone):
+    def by_login(self, phone=None):
         # 验证码登录
-        self.send_message(phone)
+        phone_data = phone
+        if phone is None:
+            phone_data = phone
+        self.send_message(phone_data)
         self.app_headers["App-Version"] = "7.3.0"
         self.app_headers["device"] = "android"
         self.app_headers["Origin-Id"] = "011e0b33ad5bf235"
-        data_login = {"phone": phone, "code": "668899"}
+        data_login = {"phone": phone_data, "code": code}
         url = "/v1/app/account/users/info"
-        self.requests_post(url,data_login)
-        self.token = self.get_json().get("data").get("token")
+        self.requests_post(url, data_login)
+        self.app_headers["token"] = self.token = self.get_json().get("data").get("token")
         self.user_hid = self.get_json().get("data").get("hid")
         return self.get_json()
 

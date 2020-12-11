@@ -4,6 +4,7 @@ from api.base_app import BaseApp
 class Activity(BaseApp):
     def __init__(self):
         super(Activity, self).__init__()
+        self.by_login()
 
     def activity_type_list(self):
         # 【活动】分类列表
@@ -15,5 +16,7 @@ class Activity(BaseApp):
         # 【活动】列表
         url = "/bhmc/v1/white/activity/list"
         data = {"page_no":"","page_size":"","type_hid":"","keyword":""}
-        self.requests_get(url)
+        self.requests_get(url,data)
         return self.get_json()
+
+
