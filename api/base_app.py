@@ -1,4 +1,5 @@
 import json
+import os
 
 import requests
 
@@ -6,8 +7,10 @@ import requests
 class BaseApp(object):
     def __init__(self):
         self.base_url = "http://test-api.bhmc.com.cn"
+        self.base_bhmc_url = "http://test-api.bhmc.com.cn"
         self.app_headers = {"Content-Type": "application/x-www-form-urlencoded"}
-        # self.get_url = None
+        self.token = None
+        self.user_hid = None
 
     def requests_get(self, url, get_data=None, token=None, content=None):
         # get方法
@@ -17,9 +20,9 @@ class BaseApp(object):
         # else:
         #     self.app_headers["Content-Type"] = "application/x-www-form-urlencoded"
         if get_data is None:
-            self.rp = requests.get(url=self.get_url, headers=self.app_headers)
+            self.rp = requests.get(url=self.get_url, headers=self.app_headers, verify=False)
         else:
-            self.rp = requests.get(url=self.get_url, params=get_data, headers=self.app_headers)
+            self.rp = requests.get(url=self.get_url, params=get_data, headers=self.app_headers, verify=False)
 
     def requests_post(self, url, post_data=None, token=None, content=None):
         # post方法
@@ -30,9 +33,9 @@ class BaseApp(object):
         # else:
         #     self.app_headers["Content-Type"] = "application/x-www-form-urlencoded"
         if post_data is None:
-            self.rp = requests.post(url=self.post_url, headers=self.app_headers)
+            self.rp = requests.post(url=self.post_url, headers=self.app_headers, verify=False)
         else:
-            self.rp = requests.post(url=self.post_url, data=post_data, headers=self.app_headers)
+            self.rp = requests.post(url=self.post_url, data=post_data, headers=self.app_headers, verify=False)
 
     def requests_delete(self, url, post_data=None, token=None, content=None):
         # delete方法
@@ -43,10 +46,29 @@ class BaseApp(object):
         # else:
         #     self.app_headers["Content-Type"] = "application/x-www-form-urlencoded"
         if post_data is None:
-            self.rp = requests.post(url=self.post_url, headers=self.app_headers)
+            self.rp = requests.post(url=self.post_url, headers=self.app_headers, verify=False)
         else:
-            self.rp = requests.delete(url=self.post_url, params=post_data, headers=self.app_headers)
-        pass
+            self.rp = requests.delete(url=self.post_url, params=post_data, headers=self.app_headers, verify=False)
+
+    def send_message(self, phone):
+        # 获取验证码
+        url = "/v1/app/white/sms2"
+        data = {"phone": phone}
+        self.requests_post(url, data)
+        return self.get_json()
+
+    def by_login(self, phone):
+        # 验证码登录
+        self.send_message(phone)
+        self.app_headers["App-Version"] = "7.3.0"
+        self.app_headers["device"] = "android"
+        self.app_headers["Origin-Id"] = "011e0b33ad5bf235"
+        data_login = {"phone": phone, "code": "668899"}
+        url = "/v1/app/account/users/info"
+        self.requests_post(url,data_login)
+        self.token = self.get_json().get("data").get("token")
+        self.user_hid = self.get_json().get("data").get("hid")
+        return self.get_json()
 
     def get_json(self):
         # 获取json数据
@@ -60,3 +82,8 @@ class BaseApp(object):
     def read_txt(self):
         # 读取txt文件
         pass
+
+
+if __name__ == '__main__':
+    print(os.path.dirname(os.path.abspath("bhmc")))
+    print(os.path.abspath(__file__))
