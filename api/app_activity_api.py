@@ -19,4 +19,11 @@ class Activity(BaseApp):
         self.requests_get(url,data)
         return self.get_json()
 
+    def activity_register_info(self):
+        # 【活动】报名活动-详情
+        url = "/bhmc/v1/white/activity/register_info"
+        data = {"hid":""}
+        self.requests_get(url,data)
+        return self.get_json()
+
 

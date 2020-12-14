@@ -1,0 +1,4 @@
+{
+  "scripts/test_app_activity.py": true,
+  "scripts/test_app_activity.py::TestActivity": true
+}

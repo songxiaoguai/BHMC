@@ -3,7 +3,10 @@ import os
 
 import requests
 
-from api import phone, code
+from api import phone_num, code
+from tools.log_file import GetLogin
+
+log = GetLogin.get_logger()
 
 
 class BaseApp(object):
@@ -56,7 +59,7 @@ class BaseApp(object):
         # 获取验证码
         phone_data = phone
         if phone is None:
-            phone_data = phone
+            phone_data = phone_num
         url = "/v1/app/white/sms2"
         data = {"phone": phone_data}
         self.requests_post(url, data)
@@ -66,7 +69,7 @@ class BaseApp(object):
         # 验证码登录
         phone_data = phone
         if phone is None:
-            phone_data = phone
+            phone_data = phone_num
         self.send_message(phone_data)
         self.app_headers["App-Version"] = "7.3.0"
         self.app_headers["device"] = "android"
@@ -83,9 +86,23 @@ class BaseApp(object):
         # if self.rp.status_code
         return self.rp.json()
 
-    def get_assert(self):
+    def get_assert(self, message, status_code, data=None):
         # 获取断言
-        pass
+        try:
+            # 断言响应信息
+            assert message == self.rp.json().get("msg")
+            # 断言状态码
+            assert status_code == self.rp.status_code
+            # 断言data数据
+            # if data is None:
+            #     pass
+            # else:
+            #     assert data == self.rp.json().get("data")
+        except Exception as e:
+            # 日志
+            log.error(f"断言错误了！{e},{message}!={self.rp.json().get('msg')},{status_code}!={self.rp.status_code}")
+            # 抛出异常
+            raise e
 
     def read_txt(self):
         # 读取txt文件
