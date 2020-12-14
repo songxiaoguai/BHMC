@@ -75,10 +75,10 @@ class BaseApp(object):
         self.app_headers["device"] = "android"
         self.app_headers["Origin-Id"] = "011e0b33ad5bf235"
         data_login = {"phone": phone_data, "code": code}
-        url = "/v1/app/account/users/info"
+        url = "/v1/app/white/auth/login_by_code2"
         self.requests_post(url, data_login)
         self.app_headers["token"] = self.token = self.get_json().get("data").get("token")
-        self.user_hid = self.get_json().get("data").get("hid")
+        self.user_hid = self.get_json().get("data").get("user_hid")
         return self.get_json()
 
     def get_json(self):
@@ -94,10 +94,8 @@ class BaseApp(object):
             # 断言状态码
             assert status_code == self.rp.status_code
             # 断言data数据
-            # if data is None:
-            #     pass
-            # else:
-            #     assert data == self.rp.json().get("data")
+            if data is not None:
+                assert data == self.rp.json().get("data")
         except Exception as e:
             # 日志
             log.error(f"断言错误了！{e},{message}!={self.rp.json().get('msg')},{status_code}!={self.rp.status_code}")
@@ -110,5 +108,7 @@ class BaseApp(object):
 
 
 if __name__ == '__main__':
-    print(os.path.dirname(os.path.abspath("bhmc")))
-    print(os.path.abspath(__file__))
+    # print(os.path.dirname(os.path.abspath("bhmc")))
+    # print(os.path.abspath(__file__))
+    base = BaseApp()
+    print(base.by_login())
